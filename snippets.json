@@ -1,0 +1,64 @@
+// Organization Snippet - to go on every page
+
+ <script type="application/ld+json">
+ {
+	 "@context": "http://schema.org",
+	 "@type": "Organization",
+	 "name": "Company",
+	 "url": "https://www.company.com/",
+	 "logo": "https://www.company.com/themes/custom/sndev_d8/images/logo-tag-01.png",
+	 "telephone": "630-555-1212",
+	 "foundingDate": "1966",
+	 "address": {
+		 "@type": "PostalAddress",
+		 "streetAddress": "123 E. Main Rd",
+		 "addressLocality": "Chicago",
+		 "addressRegion": "IL",
+		 "postalCode": "60070",
+		 "addressCountry": {
+		 	"@type": "Country",
+		 	"name": "USA"
+		 }
+	 }
+}
+</script>
+
+
+// Services snippet - to go only on specicic pages as noted below
+
+// https://www.cncexchange.com/services/appraisals-auctions
+<script type="application/ld+json">
+{
+	"@context": "http://schema.org",
+	"@type": "Service",
+	"serviceType": "Machinery",
+	"category": "Machinery Sales",
+	"provider": {
+		"@type": "Organization",
+		"name": "Company"
+	},
+	"areaServed": {
+		"@type": "Country",
+		"name": "USA"
+	}
+}
+</script>
+
+
+// Product Snippet - add to all product pages on the site in a way that the data is dynamcilaly populated from the coresponding node fields
+
+<script type='application/ld+json'>
+{
+    "@context": "http://www.schema.org",
+    "@type": "Product",
+    "name": "",
+    "category": "Machinery",
+    "image": "",
+    "description": "",
+    "sku": "",
+    "brand": {
+        "@type": "Brand",
+        "name": ""
+    }
+}
+</script>

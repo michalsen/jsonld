@@ -1,0 +1,146 @@
+<?php
+/**
+ *  @file
+ *  JSON ld
+ */
+
+
+function jsonld_preprocess_html(&$variables) {
+
+  // Set
+  $current_uri = \Drupal::request()->getRequestUri();
+  $json_ld_load = \Drupal::state()->get('jsonld');
+  $json_ld = json_decode($json_ld_load);
+  $added_jsonld = '';
+
+
+  // If Dynamic Machine
+  if (preg_match('#/machines/[0-9]#', $current_uri)) {
+    $parsed = explode('/', $current_uri);
+    // kint($parsed[2]);
+
+    $query = db_select('node__field_stock_number', 'n')
+                ->fields('n', ['entity_id'])
+                ->condition('field_stock_number_value' , $parsed[2], '=')
+                ->execute()
+                ->fetchObject();
+
+    $node_storage = \Drupal::entityTypeManager()->getStorage('node');
+    $node = $node_storage->load($query->entity_id);
+
+    $file_storage = \Drupal::entityTypeManager()->getStorage('file');
+    $file = $file_storage->load($node->get('field_product_image')->target_id);
+    if ($file) {
+      $file_path = file_url_transform_relative(file_create_url($file->getFileUri()));
+    }
+     else {
+      $file_path = '';
+     }
+
+    $url = "http" . (($_SERVER['SERVER_PORT'] == 443) ? "s" : "") . "://" . $_SERVER['HTTP_HOST'] . $file_path;
+
+    // $brand = taxonomy_term_load($node->get('field_machine_type')->target_id);
+
+    $added_jsonld = '<script type="application/ld+json">
+                    {
+                        "@context": "http://www.schema.org",
+                        "@type": "Product",
+                        "name": "' . $node->get('field_machine_title')->value . '",
+                        "category": "CNC Machinery",
+                        "image": "' . $url . '",
+                        "description": "' . $node->get('field_machine_description')->value . '",
+                         "sku": "' . $node->get('field_stock_number')->value . '",
+                         "brand": {
+                             "@type": "Brand",
+                             "name": "' . $node->get('field_manufacturer')->value . '"
+                         }
+                     }
+                    </script>';
+  }
+
+
+  // Loop through Pages
+  for ($i = 1; $i < 11; $i++) {
+
+    $path = 'jsonld_page_' . $i . '_path';
+    $service = 'jsonld_page_' . $i . '_servicetype';
+    $category = 'jsonld_page_' . $i . '_category';
+
+    if (isset($json_ld->$path)) {
+      if ($json_ld->$path == $current_uri) {
+         $added_jsonld = '<script type="application/ld+json">
+                          {
+                            "@context": "http://schema.org",
+                            "@type": "Service",
+                            "serviceType": "' . $json_ld->$service . '",
+                            "category": "' . $json_ld->$category . '",
+                            "provider": {
+                              "@type": "Organization",
+                              "name": "CNC Exchange"
+                            },
+                            "areaServed": {
+                              "@type": "Country",
+                              "name": "USA"
+                            }
+                          }
+                            </script>';
+      }
+    }
+  }
+
+  $variables['jsonld'] = \Drupal\Core\Render\Markup::create(
+  '<script type="application/ld+json">
+                                 {
+                                   "@context": "http://schema.org",
+                                   "@type": "Organization",
+                                   "name": "' . $json_ld->jsonld_name . '",
+                                   "url": "' . $json_ld->jsonld_url . '",
+                                   "logo": "' . $json_ld->jsonld_logo . '",
+                                   "telephone": "' . $json_ld->jsonld_telephone . '",
+                                   "foundingDate": "' . $json_ld->jsonld_foundingdate . '",
+                                   "address": {
+                                     "@type": "PostalAddress",
+                                     "streetAddress": "' .  $json_ld->jsonld_address_street . '",
+                                     "addressLocality": "' . $json_ld->jsonld_address_locality . '",
+                                     "addressRegion": "' . $json_ld->jsonld_address_region . '",
+                                     "postalCode": "' . $json_ld->jsonld_address_postalcode . '",
+                                     "addressCountry": {
+                                      "@type": "Country",
+                                      "name": "' . $json_ld->jsonld_address_country . '"
+                                     }
+                                   }
+                                 }
+  </script>' . $added_jsonld);
+
+
+
+   return $variables;
+
+}
+
+
+
+/*
+ <script type="application/ld+json">
+ {
+   "@context": "http://schema.org",
+   "@type": "Organization",
+   "name": "{{ jsonld_name }}",
+   "url": "{{ jsonld_url }}",
+   "logo": "{{ jsonld_logo }}",
+   "telephone": "{{ jsonld_telephone }}",
+   "foundingDate": "{{ jsonld_foundingdate }}",
+   "address": {
+     "@type": "PostalAddress",
+     "streetAddress": "{{ jsonld_address_street }}",
+     "addressLocality": "{{ jsonld_address_locality }}",
+     "addressRegion": "{{ jsonld_address_region }}",
+     "postalCode": "{{ jsonld_address_postalcode }}",
+     "addressCountry": {
+      "@type": "Country",
+      "name": "{{ jsonld_address_country }}"
+     }
+   }
+}
+</script>
+*/
