@@ -1,66 +1,41 @@
 <?php
 /**
  *  @file
- *  JSON ld
+ *  SN Tracking
  */
 
+// Add {{ jsonld }} to theme/base/html twig
 
 function jsonld_preprocess_html(&$variables) {
 
-  // Set
+  // Get Current Path
   $current_uri = \Drupal::request()->getRequestUri();
-  $json_ld_load = \Drupal::state()->get('jsonld');
-  $json_ld = json_decode($json_ld_load);
+
+  // Get JSON-LD data from table
+  $jsonld_query = db_select('jsonld', 't')
+       ->fields('t', array('jsonld'))
+       ->execute()
+       ->fetchObject();
+
+  $json_ld = json_decode($jsonld_query->jsonld);
+
+
   $added_jsonld = '';
 
 
-  // If Dynamic Machine
-  if (preg_match('#/machines/[0-9]#', $current_uri)) {
-    $parsed = explode('/', $current_uri);
-    // kint($parsed[2]);
-
-    $query = db_select('node__field_stock_number', 'n')
-                ->fields('n', ['entity_id'])
-                ->condition('field_stock_number_value' , $parsed[2], '=')
-                ->execute()
-                ->fetchObject();
-
-    $node_storage = \Drupal::entityTypeManager()->getStorage('node');
-    $node = $node_storage->load($query->entity_id);
-
-    $file_storage = \Drupal::entityTypeManager()->getStorage('file');
-    $file = $file_storage->load($node->get('field_product_image')->target_id);
-    if ($file) {
-      $file_path = file_url_transform_relative(file_create_url($file->getFileUri()));
-    }
-     else {
-      $file_path = '';
-     }
-
-    $url = "http" . (($_SERVER['SERVER_PORT'] == 443) ? "s" : "") . "://" . $_SERVER['HTTP_HOST'] . $file_path;
-
-    // $brand = taxonomy_term_load($node->get('field_machine_type')->target_id);
-
-    $added_jsonld = '<script type="application/ld+json">
-                    {
-                        "@context": "http://www.schema.org",
-                        "@type": "Product",
-                        "name": "' . $node->get('field_machine_title')->value . '",
-                        "category": "CNC Machinery",
-                        "image": "' . $url . '",
-                        "description": "' . $node->get('field_machine_description')->value . '",
-                         "sku": "' . $node->get('field_stock_number')->value . '",
-                         "brand": {
-                             "@type": "Brand",
-                             "name": "' . $node->get('field_manufacturer')->value . '"
-                         }
-                     }
-                    </script>';
-  }
-
+      // Count how many pages
+      $count = 1;
+      while (1){
+        $object = 'jsonld_page_' . $count . '_path';
+          if (strlen($json_ld->{$object}) < 1) {
+            break;
+          }
+        $count++;
+      }
+      $count = $count - 1;
 
   // Loop through Pages
-  for ($i = 1; $i < 11; $i++) {
+  for ($i = 1; $i < $count; $i++) {
 
     $path = 'jsonld_page_' . $i . '_path';
     $service = 'jsonld_page_' . $i . '_servicetype';
@@ -76,7 +51,7 @@ function jsonld_preprocess_html(&$variables) {
                             "category": "' . $json_ld->$category . '",
                             "provider": {
                               "@type": "Organization",
-                              "name": "CNC Exchange"
+                              "name": "' . $json_ld->jsonld_name . '"
                             },
                             "areaServed": {
                               "@type": "Country",
@@ -112,35 +87,7 @@ function jsonld_preprocess_html(&$variables) {
                                  }
   </script>' . $added_jsonld);
 
-
-
    return $variables;
 
 }
 
-
-
-/*
- <script type="application/ld+json">
- {
-   "@context": "http://schema.org",
-   "@type": "Organization",
-   "name": "{{ jsonld_name }}",
-   "url": "{{ jsonld_url }}",
-   "logo": "{{ jsonld_logo }}",
-   "telephone": "{{ jsonld_telephone }}",
-   "foundingDate": "{{ jsonld_foundingdate }}",
-   "address": {
-     "@type": "PostalAddress",
-     "streetAddress": "{{ jsonld_address_street }}",
-     "addressLocality": "{{ jsonld_address_locality }}",
-     "addressRegion": "{{ jsonld_address_region }}",
-     "postalCode": "{{ jsonld_address_postalcode }}",
-     "addressCountry": {
-      "@type": "Country",
-      "name": "{{ jsonld_address_country }}"
-     }
-   }
-}
-</script>
-*/
