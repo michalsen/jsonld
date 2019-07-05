@@ -209,9 +209,9 @@ class JSONldForm extends FormBase {
     $form['field_container']['add_name'] = array(
       '#type' => 'submit',
       '#value' => t('Add one more'),
-      '#submit' => array('::mymoduleAjaxExampleAddMoreAddOne'),
+      '#submit' => array('::jsonAddOneMore'),
       '#ajax' => array(
-        'callback' => '::mymoduleAjaxExampleAddMoreAddOneCallback',
+        'callback' => '::jsonAddOneMoreCallback',
         'wrapper' => 'js-ajax-elements-wrapper',
       ),
       '#weight' => 100,
@@ -232,7 +232,7 @@ class JSONldForm extends FormBase {
    * @param array $form
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    */
-  function mymoduleAjaxExampleAddMoreRemove(array &$form, FormStateInterface $form_state) {
+  function jsonAddRemoveOne(array &$form, FormStateInterface $form_state) {
     // Get the triggering item
     $delta_remove = $form_state->getTriggeringElement()['#parents'][1];
 
@@ -261,7 +261,7 @@ class JSONldForm extends FormBase {
    *
    * @return mixed
    */
-  function mymoduleAjaxExampleAddMoreRemoveCallback(array &$form, FormStateInterface $form_state) {
+  function jsonAddRemoveOneCallback(array &$form, FormStateInterface $form_state) {
     return $form['field_container'];
   }
 
@@ -269,7 +269,7 @@ class JSONldForm extends FormBase {
    * @param array $form
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    */
-  function mymoduleAjaxExampleAddMoreAddOne(array &$form, FormStateInterface $form_state) {
+  function jsonAddOneMore(array &$form, FormStateInterface $form_state) {
 
     // Store our form state
     $field_deltas_array = $form_state->get('field_deltas');
@@ -300,7 +300,7 @@ class JSONldForm extends FormBase {
    *
    * @return mixed
    */
-  function mymoduleAjaxExampleAddMoreAddOneCallback(array &$form, FormStateInterface $form_state) {
+  function jsonAddOneMoreCallback(array &$form, FormStateInterface $form_state) {
     return $form['field_container'];
   }
 
