@@ -1,0 +1,26 @@
+<?php
+
+
+/**
+* Implements hook_schema().
+*
+* Defines the database tables used by this module.
+*
+* @see hook_schema()
+*
+* @ingroup lotus
+*/
+function jsonld_schema() {
+  $schema['jsonld'] = array(
+    'description' => 'Stores site JSON-LD data.',
+    'fields' => array(
+      'jsonld' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+        'description' => 'JSON LD',
+      ),
+    ),
+  );
+
+  return $schema;
+}

@@ -1,7 +1,7 @@
-cncexsf.form:
+jsonld.form:
   path: '/admin/jsonld'
   defaults:
     _form: '\Drupal\jsonld\Form\JSONldForm'
-    _title: 'SN json-ld'
+    _title: 'JSON-ld'
   requirements:
     _permission: 'admin content'
